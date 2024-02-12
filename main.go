@@ -10,9 +10,15 @@ func main() {
 
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		// Write "pong" back to the client
-		fmt.Fprintf(w, "pong\n")
+		_, err := fmt.Fprintf(w, "pong\n")
+		if err != nil {
+			return
+		}
 	})
 
 	fmt.Println("Server is running on port 8080")
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		return
+	}
 }
