@@ -11,6 +11,25 @@ func handleConnection(conn net.Conn) {
 		}
 	}(conn)
 
+	buf := make([]byte, 4)
+	_, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println("Error reading from connection:", err.Error())
+		return
+	}
+	if string(buf[:4]) != "ping" {
+		fmt.Println("Received unexpected data:", string(buf))
+		return
+	}
+
+	response := []byte("pong\n")
+	_, err = conn.Write(response)
+	if err != nil {
+		fmt.Println("Error sending data:", err)
+		return
+	}
+
+	return
 }
 
 func main() {
@@ -20,12 +39,20 @@ func main() {
 	if err != nil {
 		fmt.Print(err)
 	}
-	// TODO: might have to defer ln.Close()
+	fmt.Println("Listening on Port 1080...")
+	defer func(ln net.Listener) {
+		err := ln.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(ln)
 	for {
+		// ln.accept blocks till new connection
 		conn, err := ln.Accept()
 		if err != nil {
 			fmt.Print(err)
 		}
+		fmt.Println("Accepted connection from:", conn.RemoteAddr().String())
 		go handleConnection(conn)
 	}
 }
